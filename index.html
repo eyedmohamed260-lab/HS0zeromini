@@ -2949,47 +2949,30 @@ function closeEarth(){
     
     // Create audio elements dynamically
     function createSoundElements() {
-// FIXED: Correct PNG to sound file mapping
-
+      const sounds = {
+        'spirt1': 'The Spirits.mp3',
+        'crazy1': 'The Buried Ones.mp3',
+        'humans1': 'The Surface Humans.mp3',
+        'ussrgiant1': 'The USSR Giants.mp3',
+        'The Echo-Stalkers': 'The Echo-Stalkers.mp3',
+        'Bearers1': 'The Bearers.mp3',
+        'The Primordial Anchors1': 'The Primordial Anchors.mp3',
+        'Karmlate1': 'karmlt.mp3',
+        'lack1': 'Mid Earth\'s ocean.mp3'
+      };
+      
+      for (const [key, file] of Object.entries(sounds)) {
+        const audio = document.createElement('audio');
+        audio.id = `sound-${key}`;
+        audio.src = file;
+        audio.preload = 'auto';
+        document.body.appendChild(audio);
+      }
+    }
     
     // Call this when the page loads
-// Add this new function to preload sounds
-function preloadAllSounds() {
-  console.log("🔄 Preloading 9 sound files...");
-  
-  const soundFiles = [
-    'The Spirits.mp3',
-    'The Buried Ones.mp3', 
-    'The Surface Humans.mp3',
-    'The USSR Giants.mp3',
-    'The Echo-Stalkers.mp3',
-    'The Bearers.mp3',
-    'The Primordial Anchors.mp3',
-    'karmlt.mp3',
-    'Mid Earth\'s ocean.mp3'
-  ];
-  
-  soundFiles.forEach(filename => {
-    const audio = new Audio();
-    audio.preload = 'auto';
-    audio.src = filename;
+    window.addEventListener('load', createSoundElements);
     
-    audio.addEventListener('loadeddata', () => {
-      console.log(`✅ Loaded: ${filename}`);
-    });
-    
-    audio.addEventListener('error', (e) => {
-      console.error(`❌ Failed to load ${filename}:`, e);
-      console.log("💡 Check: Is the file in the repository? Case-sensitive?");
-    });
-    
-    // Trigger load
-    audio.load();
-  });
-}
-
-// Call it when page loads
-window.addEventListener('load', preloadAllSounds);    
     // Map PNG filenames to their sound IDs
     const PNG_SOUND_MAP = {
       'spirt1.png': 'sound-spirt1',
@@ -3006,71 +2989,34 @@ window.addEventListener('load', preloadAllSounds);
     let currentSound = null;
     
     function playPNGSound(pngFilename) {
-  console.log("🔊 Attempting to play sound for:", pngFilename);
-  
-  // Stop any currently playing sound
-  if (currentSound) {
-    currentSound.pause();
-    currentSound.currentTime = 0;
-    currentSound = null;
-  }
-  
-  // Get the sound filename from the mapping
-  const soundFilename = PNG_SOUND_MAP[pngFilename];
-  if (!soundFilename) {
-    console.error("❌ No sound mapping for:", pngFilename);
-    return;
-  }
-  
-  console.log("📁 Sound file:", soundFilename);
-  
-  // Create new audio element
-  const audio = new Audio();
-  
-  // Event listeners for debugging
-  audio.addEventListener('canplaythrough', () => {
-    console.log("✅ Audio can play:", soundFilename);
-  });
-  
-  audio.addEventListener('error', (e) => {
-    console.error("❌ Failed to load sound:", soundFilename, "Error:", e);
-    console.log("Check if file exists with exact name:", soundFilename);
-  });
-  
-  audio.addEventListener('playing', () => {
-    console.log("🎵 Now playing:", soundFilename);
-  });
-  
-  // Set audio properties
-  audio.volume = 1.0;
-  audio.currentTime = 0;
-  audio.src = soundFilename;
-  
-  // Try to play
-  const playPromise = audio.play();
-  if (playPromise !== undefined) {
-    playPromise
-      .then(() => {
-        console.log("✅ Successfully started playing:", soundFilename);
-        currentSound = audio;
-      })
-      .catch(e => {
-        console.error("❌ Play failed for", soundFilename, ":", e);
-        
-        // Try with encoded filename (for apostrophe)
-        if (soundFilename.includes("'")) {
-          console.log("🔄 Trying encoded version...");
-          const encodedFilename = soundFilename.replace("'", "%27");
-          const audio2 = new Audio(encodedFilename);
-          audio2.volume = 1.0;
-          audio2.play().catch(e2 => console.error("Encoded also failed:", e2));
-          currentSound = audio2;
-        }
-      });
-  }
-}
+      // Stop any currently playing sound
+      if (currentSound) {
+        currentSound.pause();
+        currentSound.currentTime = 0;
+      }
+      
+      // Get the sound ID from the mapping
+      const soundId = PNG_SOUND_MAP[pngFilename];
+      if (!soundId) return;
+      
+      // Get the audio element
+      const soundElement = document.getElementById(soundId);
+      if (!soundElement) return;
+      
+      // Play the sound
+      soundElement.volume = 1.0; // 100% volume
+      soundElement.currentTime = 0;
+      soundElement.play().catch(e => console.log("Audio play failed:", e));
+      currentSound = soundElement;
+    }
     
-
+    function stopCurrentSound() {
+      if (currentSound) {
+        currentSound.pause();
+        currentSound.currentTime = 0;
+        currentSound = null;
+      }
+    }
 
     function safePlayAudio(el,{resetTime=true}={}) {
       if(!el) return;
@@ -3170,9 +3116,23 @@ window.addEventListener('load', preloadAllSounds);
       detailOverlay.setAttribute("aria-hidden","false");
       
       // Play the corresponding sound
-// Play the corresponding sound
-const filename = src.split('/').pop();
-playPNGSound(filename); // This will handle all sounds including lack1.png
+      const filename = src.split('/').pop();
+      
+      // Special handling for lack1.png (Mid Earth's ocean)
+      if (filename === 'lack1.png') {
+        const oceanSound = document.getElementById('midEarthOceanSound');
+        if (oceanSound) {
+          // Stop any other sounds first
+          stopCurrentSound();
+          // Play the ocean sound
+          oceanSound.volume = 1.0;
+          oceanSound.currentTime = 0;
+          oceanSound.play().catch(e => console.log("Ocean sound play failed:", e));
+          currentSound = oceanSound;
+        }
+      } else {
+        playPNGSound(filename);
+      }
       
       // Hide all description boxes first
       const allDescs = document.querySelectorAll('.png-description');
