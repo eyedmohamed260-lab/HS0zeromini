@@ -2949,17 +2949,18 @@ function closeEarth(){
     
     // Create audio elements dynamically
     function createSoundElements() {
-      const sounds = {
-        'spirt1': 'The Spirits.mp3',
-        'crazy1': 'The Buried Ones.mp3',
-        'humans1': 'The Surface Humans.mp3',
-        'ussrgiant1': 'The USSR Giants.mp3',
-        'The Echo-Stalkers': 'The Echo-Stalkers.mp3',
-        'Bearers1': 'The Bearers.mp3',
-        'The Primordial Anchors1': 'The Primordial Anchors.mp3',
-        'Karmlate1': 'karmlt.mp3',
-        'lack1': 'Mid Earth\'s ocean.mp3'
-      };
+const SOUND_FILES = {
+  spirt1: "assets/audio/the_spirits.mp3",
+  crazy1: "assets/audio/the_buried_ones.mp3",
+  humans1: "assets/audio/the_surface_humans.mp3",
+  ussrgiant1: "assets/audio/the_ussr_giants.mp3",
+  echo_stalkers: "assets/audio/echo_stalkers.mp3",
+  bearers1: "assets/audio/the_bearers.mp3",
+  primordial_anchors1: "assets/audio/the_primordial_anchors.mp3",
+  karmlate1: "assets/audio/karmlt.mp3",
+  lack1: "assets/audio/mid_earth_ocean.mp3"
+};
+
       
       for (const [key, file] of Object.entries(sounds)) {
         const audio = document.createElement('audio');
@@ -2974,17 +2975,18 @@ function closeEarth(){
     window.addEventListener('load', createSoundElements);
     
     // Map PNG filenames to their sound IDs
-    const PNG_SOUND_MAP = {
-      'spirt1.png': 'sound-spirt1',
-      'crazy1.png': 'sound-crazy1',
-      'humans1.png': 'sound-humans1',
-      'ussrgiant1.png': 'sound-ussrgiant1',
-      'The Echo-Stalkers.png': 'sound-The Echo-Stalkers',
-      'Bearers1.png': 'sound-Bearers1',
-      'The Primordial Anchors1.png': 'sound-The Primordial Anchors1',
-      'Karmlate1.png': 'sound-Karmlate1',
-      'lack1.png': 'sound-lack1'
-    };
+const PNG_SOUND_MAP = {
+  "spirt1.png": "spirt1",
+  "crazy1.png": "crazy1",
+  "humans1.png": "humans1",
+  "ussrgiant1.png": "ussrgiant1",
+  "The Echo-Stalkers.png": "echo_stalkers",
+  "Bearers1.png": "bearers1",
+  "The Primordial Anchors1.png": "primordial_anchors1",
+  "Karmlate1.png": "karmlate1",
+  "lack1.png": "lack1"
+};
+
     
     let currentSound = null;
     
