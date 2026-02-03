@@ -2566,12 +2566,12 @@ card15_title:"",
         mouseLeaveDelay:null,
         isBlack:false,
         isFlipped:false,
-        alternateImages:[
-          '2026.png','2027.png','2028.png','2029.png',
-          '2030.png','2031.png','2032.png','2033.png',
-          'WW1.png','WW2.png','WW3.png','WW4.png',
-          'WW5.png','WW6.png','WW7.png','WW8.png'
-        ]
+alternateImages:[
+  '2026.png','2027.png','2028.png','2029.png',
+  '2030.png','2031.png','2032.png','2033.png',
+  'WW1.png','WW2.png','WW3.png','WW4.png',
+  'WW5.png','WW6.png','WW7.png','WW8.png'
+]
       }),
       computed:{
         i18next(){ return window.i18next; },
@@ -4331,6 +4331,20 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 </script>
-
+<script>
+window.addEventListener('load', function() {
+    document.querySelectorAll('card').forEach(card => {
+        const img = card.querySelector('img');
+        if (img) {
+            img.onerror = function() {
+                console.error('Failed to load:', this.src);
+            };
+            img.onload = function() {
+                console.log('Loaded:', this.src);
+            };
+        }
+    });
+});
+</script>
 </body>
 </html>
