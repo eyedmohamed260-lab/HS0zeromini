@@ -2941,6 +2941,175 @@ function closeEarth(){
 
  
   </script>
+<script>
+/* ============================================
+   AUTO PLAY SOUND WHEN PNG IS SHOWN
+   (NO renaming of png/mp3 files)
+============================================ */
+
+let audioUnlocked = false;
+let pendingSoundKey = null;
+let currentAudio = null;
+
+// ✅ Your EXACT mapping (no renaming)
+const SOUND_FILES = {
+  "Karmlate1": "karmlt.mp3",
+  "The Primordial Anchors1": "ThePrimordialAnchors.mp3",
+  "lack1": "MidEarthsocean.mp3",
+  "spirt1": "TheSpirits.mp3",
+  "crazy1": "TheBuriedOnes.mp3",
+  "humans1": "TheSurfaceHumans.mp3",
+  "ussrgiant1": "TheUSSRGiants.mp3",
+  "The Echo-Stalkers": "TheEchoStalkers.mp3",
+  "Bearers1": "TheBearers.mp3"
+};
+
+// ✅ PNG filename → key above (exact png names)
+const PNG_TO_KEY = {
+  "Karmlate1.png": "Karmlate1",
+  "The Primordial Anchors1.png": "The Primordial Anchors1",
+  "lack1.png": "lack1",
+  "spirt1.png": "spirt1",
+  "crazy1.png": "crazy1",
+  "humans1.png": "humans1",
+  "ussrgiant1.png": "ussrgiant1",
+  "The Echo-Stalkers.png": "The Echo-Stalkers",
+  "Bearers1.png": "Bearers1"
+};
+
+// Make safe IDs (spaces, quotes, etc.)
+function safeId(key){
+  return "sound_" + key.replace(/[^a-zA-Z0-9_-]/g, "_");
+}
+
+function ensureAudioElements(){
+  for (const [key, file] of Object.entries(SOUND_FILES)) {
+    const id = safeId(key);
+    if (document.getElementById(id)) continue;
+
+    const audio = document.createElement("audio");
+    audio.id = id;
+    audio.src = file;     // ✅ keep your exact mp3 filenames
+    audio.preload = "auto";
+    document.body.appendChild(audio);
+  }
+}
+
+function stopCurrent(){
+  if (currentAudio){
+    try{ currentAudio.pause(); currentAudio.currentTime = 0; }catch(e){}
+    currentAudio = null;
+  }
+}
+
+function playKey(key){
+  const id = safeId(key);
+  const el = document.getElementById(id);
+  if (!el) return;
+
+  stopCurrent();
+
+  // Autoplay policy: if not unlocked yet, queue it.
+  if (!audioUnlocked){
+    pendingSoundKey = key;
+    return;
+  }
+
+  el.volume = 1.0;
+  try { el.currentTime = 0; } catch(e) {}
+  el.play().catch(()=>{});
+  currentAudio = el;
+}
+
+function unlockAudio(){
+  audioUnlocked = true;
+  // Play whatever was queued first time
+  if (pendingSoundKey){
+    const k = pendingSoundKey;
+    pendingSoundKey = null;
+    playKey(k);
+  }
+}
+
+// ✅ unlock audio on first user interaction (required on GitHub Pages too)
+document.addEventListener("pointerdown", unlockAudio, { once: true, capture: true });
+document.addEventListener("keydown", unlockAudio, { once: true, capture: true });
+
+/* 🔥 Auto play when the PNG is actually visible (shown on screen) */
+function observeDetailImage(imgEl){
+  if (!imgEl) return;
+
+  const obs = new IntersectionObserver((entries)=>{
+    entries.forEach(entry=>{
+      if (!entry.isIntersecting) return;
+
+      const src = (imgEl.getAttribute("src") || "").split("/").pop();
+      const key = PNG_TO_KEY[src];
+      if (key) playKey(key);
+    });
+  }, { threshold: 0.6 });
+
+  obs.observe(imgEl);
+}
+
+window.addEventListener("load", ()=>{
+  ensureAudioElements();
+
+  // ✅ this is your detail overlay image:
+  // <img id="detailOverlayImg" ...>
+  observeDetailImage(document.getElementById("detailOverlayImg"));
+});
+
+/* ✅ ALSO play immediately whenever your code changes the detail image src */
+(function hookDetailOverlay(){
+  const img = document.getElementById("detailOverlayImg");
+  if (!img) return;
+
+  const originalSet = Object.getOwnPropertyDescriptor(HTMLImageElement.prototype, "src")?.set;
+  if (!originalSet) return;
+
+  Object.defineProperty(img, "src", {
+    set(value){
+      originalSet.call(this, value);
+      const src = (value || "").split("/").pop();
+      const key = PNG_TO_KEY[src];
+      if (key) playKey(key);
+    }
+  });
+})();
+</script>
+<script>
+/* ✅ STOP SOUND WHEN PHOTO CLOSES (no need to rename anything) */
+(function(){
+  // If you already have a close function, wrap it
+  if (typeof window.closeDetailOverlay === "function") {
+    const original = window.closeDetailOverlay;
+    window.closeDetailOverlay = function(){
+      if (typeof stopCurrent === "function") stopCurrent();
+      return original.apply(this, arguments);
+    };
+  }
+
+  // Also stop when user clicks a close button if it exists
+  const closeBtn =
+    document.getElementById("detailCloseBtn") ||
+    document.querySelector("[data-close-detail]") ||
+    document.querySelector(".detail-close");
+
+  if (closeBtn) {
+    closeBtn.addEventListener("click", () => {
+      if (typeof stopCurrent === "function") stopCurrent();
+    });
+  }
+
+  // Stop on ESC too (common close behavior)
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      if (typeof stopCurrent === "function") stopCurrent();
+    }
+  });
+})();
+</script>
 
   <script>
     /* ============================================
